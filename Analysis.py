@@ -24,8 +24,8 @@ FuelPrice = 1.42
 #Number of roads in the network
 Roads = 1000
 
-# takes a list of nodes in a given path
-# returns the total cost of the path
+#takes a list of nodes in a given path
+#returns the total cost of the path
 def PathCost(graph,path,weight):
     total = 0
     for i in range(len(path)-1):
@@ -33,7 +33,7 @@ def PathCost(graph,path,weight):
         total += graph[path[i]][path[i+1]][weight]
     return total
 
-#Calculat the total length of the network
+#Calculate the total length of the network
 def TotalLength(G):
     #total length of the network
     total = 0
@@ -41,11 +41,11 @@ def TotalLength(G):
         total += a['Length']
     return total
 
-#calculate the total number of nodes in the network
+#Calculate the total number of nodes in the network
 def TotalNodes(G):
     return len(G.nodes)
 
-
+#Adds text to the final report
 def Write(Report,x,y,Write,bold=False,fontsize=10):
     if bold:
         Report.setFont("Helvetica-Bold",fontsize)
@@ -55,11 +55,12 @@ def Write(Report,x,y,Write,bold=False,fontsize=10):
 
 
 Network = nx.Graph()
-#generate a network with nodes numbered 0 to #of Roads
+#generate a network with nodes numbered 0 to # of Roads
 Network.add_nodes_from([i for i in range(Roads)])
 
 #generate network
 #iterates through all nodes and randomly adds edges as long as the total conennections is less than 3, and the edge is not a self loop
+#this is because a intersection can never have more than 4 conenctions (in most cases)
 for i in range(5,Roads-5):    
     start,end = random.randint(-5,5) + i, random.randint(-5,5) + i
     if start == end or Network.degree[start]>=3 or Network.degree[end]>=3: continue
@@ -89,7 +90,6 @@ for i in range(Roads):
 
 #Sends trucks from every intersection to every other intersection with routing based on different factors
 #Wrote it expanded to be easy to read
-
 #what is the cost,length,time optimizing by cost,length,time
 def OptimalRoutes(Network,Report,y):
     Cost = [0,0,0]
@@ -101,8 +101,8 @@ def OptimalRoutes(Network,Report,y):
         for j in range(Roads):
             if i == j: continue
             try:
+                #find the shortest path then total cost length and time for that path
                 CPath = nx.shortest_path(Network,i,j,weight='Cost')
-                
                 Cost[0] += PathCost(Network,CPath,weight='Cost')
                 Cost[1] += PathCost(Network,CPath,weight='Length')
                 Cost[2] += PathCost(Network,CPath,weight='Time')
@@ -121,6 +121,7 @@ def OptimalRoutes(Network,Report,y):
             except:
                 #expected to have quite a few excepts as not all nodes are connected
                 pass
+    #add results to final report
     Write(Report,40,y, "simulated 1 way loads : "+str(count))
     Write(Report,40,y-20,"Cost of Cost vs Time = " + str(100-(Cost[0]/Time[0])*100)[:5] + " % savings",bold=True)
     Write(Report,40,y-40,"optimized                    Cost         Length         Time")
@@ -131,8 +132,8 @@ def OptimalRoutes(Network,Report,y):
     Write(Report,350,y-60,"Best Average Trip Time = " + str("{:.1f}".format(Time[2]/count)) + "hrs")
     Write(Report,350,y-80,"Best Average Trip Cost = $" + str("{:.1f}".format(Cost[0]/count)))
 
-####################################################################
-#one way routing
+
+
 #Determines the total Costs savings of finding a route for when a truck is empty and a different route for when it is loaded
 #compares that vs always going in and out assuming that a truck is loaded
 def OneWay(truckW,Network,Report,y):
@@ -144,7 +145,7 @@ def OneWay(truckW,Network,Report,y):
             remove.append((start,end))
     removed.remove_edges_from(remove)
 
-    #loops through every and sums the cost to go there and back taking different routes
+    #loops through intersection to every intersection and sums the cost to go there and back taking different routes
     countloaded = 0
     totalCostloaded = 0
     totalCostunloaded = 0 
@@ -161,7 +162,7 @@ def OneWay(truckW,Network,Report,y):
     #Total savings calculated as total cost to take empty and loaded vs always going loaded route
     savings = 100-(totalCostloaded+totalCostunloaded)/(totalCostloaded*2)*100
 
-
+    #Adds data to final report
     Write(Report,40,y,"Tested truck size = "+str(truckW))
     Write(Report,170,y,"Total # of trips for 1 way routing ="+str(countloaded))
     Write(Report,350,y,"One way route Total Cost Savings = "  + str("{:.3f}".format(savings)) + " %",bold=True)
@@ -179,10 +180,11 @@ def GraphBarChart(x,y,xlabel,ylabel,FileName):
 GraphBarChart(Speed,SpeedFrequency,"Speed (km/h)","Fraction of roads","Speed.png")
 GraphBarChart(GVW,GVWFrequency,"GVW (t)","Fraction of roads","GVW.png")
 
-#draws the network
+#Generates and saves an image of the network 
 pos = nx.spring_layout(Network,weight='Length')
 nx.draw(Network, pos=pos, with_labels = True)
 plt.savefig("net.png")
+
 
 Report = canvas.Canvas("Report.pdf")
 Write(Report,40,580,"One way routing")
@@ -191,11 +193,9 @@ OneWay(49.5,Network,Report,540)
 OneWay(55.5,Network,Report,520)
 OneWay(62.5,Network,Report,500)
 
-#FindOptimalThroughput(G)
 
 Write(Report,40,740, "Single way routing Weights")
 OptimalRoutes(Network,Report,720)
-
 
 
 Write(Report,10,800,"Road Network Simulation",bold=True,fontsize=24)
