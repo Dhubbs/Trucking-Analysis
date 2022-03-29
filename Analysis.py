@@ -2,6 +2,8 @@ import networkx as nx
 import random
 import matplotlib.pyplot as plt
 from reportlab.pdfgen import canvas
+import requests
+import json
 
 #nodes = intersections
 #edges = roads
@@ -19,7 +21,7 @@ GVWFrequency = [0.412,0.003,0.008,0.046,0.53]
 DrivingRate = 74.72
 FuelMultiplier = 0.4329
 FuelBase = 12.27
-FuelPrice = 1.42
+
 
 #number of roads in the network
 #calculation is exponential so be careful with this
@@ -53,6 +55,29 @@ def Write(Report,x,y,Write,bold=False,fontsize=10):
     else:
         Report.setFont("Helvetica", fontsize)
     Report.drawString(x,y,Write)
+
+#gets latest fuel price for new brunswick
+def getFuelPrice():
+    url = "https://gas-price.p.rapidapi.com/canada"
+
+    #I know its not best practice to have the keys here but only have 6 requests left
+    headers = {
+        "X-RapidAPI-Host": "gas-price.p.rapidapi.com",
+        "X-RapidAPI-Key": "CJJPTAQ91RmshcOnXBj0uoiG15TFp1c17n4jsnN35yZGNHT7ZS"
+    }
+    try:
+        response = requests.request("GET", url, headers=headers)
+    except:
+        #on fail to call return a generic fuel price
+        return 1.70
+    #extract NB fuel price from response
+    data = json.loads(response.text)
+    data = data['result']
+    #New Brunswick is always 3 index in list
+    data = data[3]
+    return float(data['gasoline'])
+
+FuelPrice = getFuelPrice
 
 
 Network = nx.Graph()
