@@ -60,10 +60,9 @@ def Write(Report,x,y,Write,bold=False,fontsize=10):
 def getFuelPrice():
     url = "https://gas-price.p.rapidapi.com/canada"
 
-    #I know its not best practice to have the keys here but only have 6 requests left
     headers = {
         "X-RapidAPI-Host": "gas-price.p.rapidapi.com",
-        "X-RapidAPI-Key": "CJJPTAQ91RmshcOnXBj0uoiG15TFp1c17n4jsnN35yZGNHT7ZS"
+        "X-RapidAPI-Key": "PUT API KEY HERE"
     }
     try:
         response = requests.request("GET", url, headers=headers)
