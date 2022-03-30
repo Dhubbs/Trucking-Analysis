@@ -76,7 +76,7 @@ def getFuelPrice():
     data = data[3]
     return float(data['gasoline'])
 
-FuelPrice = getFuelPrice
+FuelPrice = getFuelPrice()
 
 
 Network = nx.Graph()
